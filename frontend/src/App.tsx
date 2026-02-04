@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { ApolloProvider } from "@apollo/client/react";
 import { AuthProvider } from "./provider/auth";
 import { client } from "./apollo/client";
+import { Login } from "./pages/Login";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ export default function App() {
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<></>} />
+            <Route path="/login" element={<Login />} />
             <Route path="/register" element={<></>} />
             <Route
               path="/"
