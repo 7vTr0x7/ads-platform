@@ -1,0 +1,28 @@
+import { gql } from "apollo-server-express";
+
+export const adSchema = gql`
+  type Ad {
+    id: ID!
+    title: String!
+    description: String
+    price: Float!
+    isActive: Boolean!
+    owner: User!
+    category: Category!
+  }
+
+  input CreateAdInput {
+    title: String!
+    description: String
+    price: Float!
+    categoryId: ID!
+  }
+
+  extend type Query {
+    ads(page: Int, limit: Int): [Ad!]!
+  }
+
+  extend type Mutation {
+    createAd(input: CreateAdInput!): Ad!
+  }
+`;
