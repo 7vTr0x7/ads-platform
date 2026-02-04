@@ -15,6 +15,7 @@ import { useServer } from "graphql-ws/use/ws";
 import { typeDefs } from "./schema/schema.js";
 import { resolvers } from "./resolvers/resolvers.js";
 import { createContext } from "./context/context.js";
+import { connectDB } from "./config/db.js";
 
 const app = express();
 
@@ -59,6 +60,8 @@ const apolloServer = new ApolloServer({
     },
   ],
 });
+
+await connectDB();
 
 // 6️⃣ Start Apollo Server
 await apolloServer.start();
