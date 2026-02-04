@@ -1,86 +1,84 @@
-import express, { Request, Response } from "express";
+import { config } from "dotenv";
+config();
+
+import express from "express";
 import http from "http";
 import cors from "cors";
-import bodyParser from "body-parser";
-import { config } from "dotenv";
-
 import { ApolloServer } from "@apollo/server";
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-
-import { useServer } from "graphql-ws/use/ws";
-import { WebSocketServer } from "ws";
+import { expressMiddleware } from "@as-integrations/express5";
 import { makeExecutableSchema } from "@graphql-tools/schema";
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default";
+
+import { WebSocketServer } from "ws";
+import { useServer } from "graphql-ws/use/ws";
 
 import { typeDefs } from "./schema/schema.js";
 import { resolvers } from "./resolvers/resolvers.js";
-import { connectDB } from "./config/db.js";
 import { createContext } from "./context/context.js";
 
-config();
+const app = express();
 
-export async function startServer() {
-  await connectDB();
+const schema = makeExecutableSchema({ typeDefs, resolvers });
 
-  const app = express();
-  const httpServer = http.createServer(app);
+const httpServer = http.createServer(app);
 
-  // Build schema for WS subscriptions
-  const schema = makeExecutableSchema({ typeDefs, resolvers });
+const wsServer = new WebSocketServer({
+  server: httpServer,
+  path: "/graphql",
+});
 
-  // Apollo Server
-  const server = new ApolloServer({
-    typeDefs,
-    resolvers,
-    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  });
-  await server.start();
-
-  // WebSocket server
-  const wsServer = new WebSocketServer({
-    server: httpServer,
-    path: "/graphql",
-  });
-  useServer(
-    {
-      schema,
-      context: async (ctx) =>
-        createContext({ connectionParams: ctx.connectionParams }),
+const serverCleanup = useServer(
+  {
+    schema,
+    context: async (ctx) => {
+      const token = ctx.connectionParams?.Authorization?.replace("Bearer ", "");
+      let user = null;
+      if (token) {
+        try {
+          user = (await import("./utils/jwt.js")).verifyToken(token);
+        } catch {}
+      }
+      return { user };
     },
-    wsServer,
-  );
+  },
+  wsServer,
+);
 
-  // Express middleware
-  app.use(cors());
-  app.use(bodyParser.json());
-  app.use("/graphql", async (req: Request, res: Response) => {
-    const result = await server.executeHTTPGraphQLRequest({
-      httpGraphQLRequest: {
-        body: req.body,
-        headers: req.headers as any,
-        method: req.method,
-        search: req.url?.split("?")[1] || "",
+const apolloServer = new ApolloServer({
+  schema,
+  plugins: [
+    ApolloServerPluginLandingPageLocalDefault(),
+    {
+      async serverWillStart() {
+        return {
+          async drainServer() {
+            await serverCleanup.dispose();
+          },
+        };
       },
-      context: async () => createContext({ req, res }),
-    });
+    },
+  ],
+});
 
-    const body: any = result.body;
-    if (body.kind === "single") {
-      res.json(body.singleResult);
-    } else if (body.kind === "batch") {
-      res.json(body.results);
-    } else {
-      res.status(500).send("Unexpected GraphQL response type");
-    }
-  });
+// 6️⃣ Start Apollo Server
+await apolloServer.start();
 
-  httpServer.listen(process.env.PORT || 4000, () => {
-    console.log(
-      `🚀 Server running at http://localhost:${process.env.PORT || 4000}/graphql`,
-    );
-    console.log(
-      `📡 Subscriptions ready at ws://localhost:${process.env.PORT || 4000}/graphql`,
-    );
-  });
-}
+// 7️⃣ Middleware for HTTP requests
+app.use(
+  "/graphql",
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  }),
+  express.json(),
+  expressMiddleware(apolloServer, {
+    context: async ({ req }) => createContext({ req }),
+  }),
+);
 
-startServer();
+// 8️⃣ Start server
+const PORT = process.env.PORT || 4000;
+httpServer.listen(PORT, () => {
+  console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
+  console.log(`📡 Subscriptions ready at ws://localhost:${PORT}/graphql`);
+});
