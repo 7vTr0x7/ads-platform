@@ -25,4 +25,8 @@ export const adSchema = gql`
   extend type Mutation {
     createAd(input: CreateAdInput!): Ad!
   }
+
+  type Subscription {
+    adAdded: Ad!
+  }
 `;

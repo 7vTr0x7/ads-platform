@@ -1,4 +1,6 @@
 import { Ad } from "../../../models/Ad.js";
+import { AD_ADDED } from "../../events.js";
+import { pubsub } from "../../pubsub.js";
 
 export const adResolvers = {
   Query: {
@@ -13,11 +15,21 @@ export const adResolvers = {
   Mutation: {
     createAd: async (_: any, { input }: any, ctx: any) => {
       if (!ctx.user) throw new Error("Unauthorized");
-      return Ad.create({
+
+      const ad = await Ad.create({
         ...input,
         owner: ctx.user.id,
         category: input.categoryId,
       });
+
+      // Reload document with populate
+      const populatedAd = await Ad.findById(ad._id)
+        .populate("owner")
+        .populate("category");
+
+      pubsub.publish(AD_ADDED, { adAdded: populatedAd });
+
+      return populatedAd;
     },
   },
 };
