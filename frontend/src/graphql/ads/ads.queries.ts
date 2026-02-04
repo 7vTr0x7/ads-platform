@@ -1,8 +1,8 @@
 import { gql } from "@apollo/client";
 
 export const GET_ADS = gql`
-  query Ads($page: Int!, $limit: Int!) {
-    ads(page: $page, limt: $limit) {
+  query Ads($page: Int, $limit: Int) {
+    ads(page: $page, limit: $limit) {
       id
       title
       description

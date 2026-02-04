@@ -7,6 +7,7 @@ import { AuthProvider } from "./provider/auth";
 import { client } from "./apollo/client";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
+import { Ads } from "./pages/Ads";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
   const { user } = useAuth();
@@ -25,7 +26,7 @@ export default function App() {
               path="/"
               element={
                 <PrivateRoute>
-                  <></>
+                  <Ads />
                 </PrivateRoute>
               }
             />
