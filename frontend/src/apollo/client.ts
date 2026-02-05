@@ -1,10 +1,13 @@
-import { InMemoryCache } from "@apollo/client";
-import { HttpLink } from "@apollo/client";
-import { ApolloLink } from "@apollo/client";
-import { ApolloClient } from "@apollo/client";
+import {
+  InMemoryCache,
+  HttpLink,
+  ApolloLink,
+  ApolloClient,
+} from "@apollo/client";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { getMainDefinition } from "@apollo/client/utilities";
 import { createClient } from "graphql-ws";
+import { SetContextLink } from "@apollo/client/link/context"; // <-- updated import
 
 const httpLink = new HttpLink({
   uri: "http://localhost:4000/graphql",
@@ -32,7 +35,18 @@ const splitLink = ApolloLink.split(
   httpLink,
 );
 
+const authLink = new SetContextLink((prevContext, operation) => {
+  const token = localStorage.getItem("token");
+  return {
+    ...prevContext, // include previous context
+    headers: {
+      ...prevContext.headers,
+      Authorization: token ? `Bearer ${token}` : "",
+    },
+  };
+});
+
 export const client = new ApolloClient({
-  link: splitLink,
+  link: authLink.concat(splitLink),
   cache: new InMemoryCache(),
 });
