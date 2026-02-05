@@ -8,3 +8,4 @@ export const categoryResolvers = {
     createCategory: async (_: any, { input }: any) => Category.create(input),
   },
 };
+ 
