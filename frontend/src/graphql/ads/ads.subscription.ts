@@ -8,9 +8,12 @@ export const Ad_ADDED = gql`
       description
       price
       owner {
+        id
         email
+        role
       }
       category {
+        id
         name
       }
     }

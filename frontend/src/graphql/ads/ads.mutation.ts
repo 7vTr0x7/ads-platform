@@ -8,9 +8,12 @@ export const CREATE_AD = gql`
       description
       price
       owner {
+        id
         email
+        role
       }
       category {
+        id
         name
       }
     }

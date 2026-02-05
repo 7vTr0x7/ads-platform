@@ -1,6 +1,5 @@
 import { GET_ADS } from "@/graphql/ads/ads.queries";
-import { Ad_ADDED } from "@/graphql/ads/ads.subscription";
-import { useQuery, useSubscription } from "@apollo/client/react";
+import { useQuery } from "@apollo/client/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CreateAdDialog } from "@/components/CreateAdDialog";
@@ -8,15 +7,6 @@ import { CreateAdDialog } from "@/components/CreateAdDialog";
 export function Ads() {
   const { data } = useQuery(GET_ADS, {
     variables: { page: 1, limit: 12 },
-  });
-
-  useSubscription(Ad_ADDED, {
-    onData: ({ data: subData }) => {
-      const newAd = subData.data.adAdded;
-      if (!data?.ads.find((ad: any) => ad.id === newAd.id)) {
-        data.ads.unshift(newAd);
-      }
-    },
   });
 
   return (

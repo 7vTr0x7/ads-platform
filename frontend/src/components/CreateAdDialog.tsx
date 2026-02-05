@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useMutation, useQuery } from "@apollo/client/react";
+import { useMutation, useQuery, useSubscription } from "@apollo/client/react";
 
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -20,6 +21,8 @@ import {
 } from "@/components/ui/select";
 import { CREATE_AD } from "@/graphql/ads/ads.mutation";
 import { GET_CATEGORIES } from "@/graphql/category/category.queries";
+import { Ad_ADDED } from "@/graphql/ads/ads.subscription";
+import { gql } from "@apollo/client";
 
 export function CreateAdDialog() {
   const [open, setOpen] = useState(false);
@@ -36,6 +39,42 @@ export function CreateAdDialog() {
       setDescription("");
       setPrice("");
       setCategoryId("");
+    },
+  });
+
+  useSubscription(Ad_ADDED, {
+    onData: ({ client, data }) => {
+      const newAd = data?.data?.adAdded;
+      if (!newAd) return;
+
+      client.cache.modify({
+        fields: {
+          ads(existing = []) {
+            const newAdRef = client.cache.writeFragment({
+              data: newAd,
+              fragment: gql`
+                fragment NewAd on Ad {
+                  id
+                  title
+                  description
+                  price
+                  owner {
+                    id
+                    email
+                    role
+                  }
+                  category {
+                    id
+                    name
+                  }
+                }
+              `,
+            });
+
+            return [newAdRef, ...existing];
+          },
+        },
+      });
     },
   });
 
@@ -61,6 +100,9 @@ export function CreateAdDialog() {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Create New Ad</DialogTitle>
+          <DialogDescription>
+            Fill in the details below to publish a new advertisement.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
