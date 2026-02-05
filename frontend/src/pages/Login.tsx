@@ -28,6 +28,7 @@ export function Login() {
       variables: { input: { email, password } },
     });
     setToken(data.login.token);
+    localStorage.setItem("token", data.login.token);
     navigate("/");
   };
 

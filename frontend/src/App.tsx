@@ -10,7 +10,8 @@ import { Register } from "./pages/Register";
 import { Ads } from "./pages/Ads";
 
 function PrivateRoute({ children }: { children: JSX.Element }) {
-  const { user } = useAuth();
+  const user = localStorage.getItem("token");
+
   return user ? children : <Navigate to="/login" />;
 }
 
