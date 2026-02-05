@@ -4,6 +4,7 @@ config();
 import express from "express";
 import http from "http";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { ApolloServer } from "@apollo/server";
 import { expressMiddleware } from "@as-integrations/express5";
 import { makeExecutableSchema } from "@graphql-tools/schema";
@@ -18,9 +19,7 @@ import { createContext } from "./context/context.js";
 import { connectDB } from "./config/db.js";
 
 const app = express();
-
 const schema = makeExecutableSchema({ typeDefs, resolvers });
-
 const httpServer = http.createServer(app);
 
 const wsServer = new WebSocketServer({
@@ -32,13 +31,16 @@ const serverCleanup = useServer(
   {
     schema,
     context: async (ctx) => {
-      const token = ctx.connectionParams?.Authorization?.replace("Bearer ", "");
+      const auth = ctx.connectionParams?.Authorization as string | undefined;
+      const token = auth?.replace("Bearer ", "");
       let user = null;
+
       if (token) {
         try {
           user = (await import("./utils/jwt.js")).verifyToken(token);
         } catch {}
       }
+
       return { user };
     },
   },
@@ -62,26 +64,24 @@ const apolloServer = new ApolloServer({
 });
 
 await connectDB();
-
-// 6️⃣ Start Apollo Server
 await apolloServer.start();
 
-// 7️⃣ Middleware for HTTP requests
 app.use(
-  "/graphql",
   cors({
     origin: "http://localhost:5173",
     credentials: true,
   }),
-  express.json(),
+);
+
+app.use(cookieParser());
+app.use(express.json());
+
+app.use(
+  "/graphql",
   expressMiddleware(apolloServer, {
     context: async ({ req }) => createContext({ req }),
   }),
 );
 
-// 8️⃣ Start server
 const PORT = process.env.PORT || 4000;
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Server ready at http://localhost:${PORT}/graphql`);
-  console.log(`📡 Subscriptions ready at ws://localhost:${PORT}/graphql`);
-});
+httpServer.listen(PORT);
