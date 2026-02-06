@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "./hooks/useAuth";
 import type { JSX } from "react";
 
 import { ApolloProvider } from "@apollo/client/react";
