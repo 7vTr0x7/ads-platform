@@ -32,7 +32,7 @@ export const adResolvers = {
       return populatedAd;
     },
 
-    UpdateAd: async (_: any, { id, input }: any, ctx: any) => {
+    updateAd: async (_: any, { id, input }: any, ctx: any) => {
       if (!ctx.user) throw new Error("Unauthorized");
 
       const ad = await Ad.findByIdAndUpdate(
