@@ -35,5 +35,6 @@ export const adSchema = gql`
 
   type Subscription {
     adAdded: Ad!
+    adUpdated: Ad!
   }
 `;
