@@ -31,5 +31,26 @@ export const adResolvers = {
 
       return populatedAd;
     },
+
+    UpdateAd: async (_: any, { id, input }: any, ctx: any) => {
+      if (!ctx.user) throw new Error("Unauthorized");
+
+      const ad = await Ad.findByIdAndUpdate(
+        id,
+        {
+          ...input,
+        },
+        { new: true },
+      );
+
+      // Reload document with populate
+      const populatedAd = await Ad.findById(ad?._id)
+        .populate("owner")
+        .populate("category");
+
+      pubsub.publish(AD_ADDED, { adAdded: populatedAd });
+
+      return populatedAd;
+    },
   },
 };

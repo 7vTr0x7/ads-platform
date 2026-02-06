@@ -17,6 +17,12 @@ export const adSchema = gql`
     price: Float!
     categoryId: ID!
   }
+  input UpdateAdInput {
+    title: String!
+    description: String
+    price: Float!
+    categoryId: ID!
+  }
 
   extend type Query {
     ads(page: Int, limit: Int): [Ad!]!
@@ -24,6 +30,7 @@ export const adSchema = gql`
 
   extend type Mutation {
     createAd(input: CreateAdInput!): Ad!
+    updateAd(id: ID!, input: UpdateAdInput!): Ad!
   }
 
   type Subscription {
