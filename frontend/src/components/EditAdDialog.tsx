@@ -30,7 +30,10 @@ export function EditAdDialog({
   const updateAdHandler = async () => {
     try {
       await updateAd({
-        variables: { id: ad.id, input: { title, description, price } },
+        variables: {
+          id: ad.id,
+          input: { title, description, price: Number(price) },
+        },
         update: (cache, { data }) => {
           if (!data?.adUpdated) return;
 
