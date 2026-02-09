@@ -1,5 +1,5 @@
 import { Ad } from "../../../models/Ad.js";
-import { AD_ADDED } from "../../events.js";
+import { AD_ADDED, AD_UPDATED } from "../../events.js";
 import { pubsub } from "../../pubsub.js";
 
 export const adResolvers = {
@@ -48,7 +48,7 @@ export const adResolvers = {
         .populate("owner")
         .populate("category");
 
-      pubsub.publish(AD_ADDED, { adAdded: populatedAd });
+      pubsub.publish(AD_UPDATED, { adUpdated: populatedAd });
 
       return populatedAd;
     },
