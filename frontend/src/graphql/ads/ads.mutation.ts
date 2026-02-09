@@ -12,8 +12,8 @@ export const CREATE_AD = gql`
 `;
 
 export const UPDATE_AD = gql`
-  mutation UpdateAd($input: UpdateAdInput!) {
-    updateAd(input: $input) {
+  mutation UpdateAd($id: ID!, $input: UpdateAdInput!) {
+    updateAd(id: $id, input: $input) {
       ...AdFragment
     }
   }
