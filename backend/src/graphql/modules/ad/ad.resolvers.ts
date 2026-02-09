@@ -52,5 +52,15 @@ export const adResolvers = {
 
       return populatedAd;
     },
+
+    deleteAd: async (_: any, { id }: any, ctx: any) => {
+      if (!ctx.user) throw new Error("Unauthorized");
+
+      const ad = await Ad.findByIdAndDelete(id);
+
+      // pubsub.publish(AD_UPDATED, { adUpdated: ad });
+
+      return ad;
+    },
   },
 };
