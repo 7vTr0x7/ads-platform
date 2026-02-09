@@ -18,10 +18,10 @@ export const adSchema = gql`
     categoryId: ID!
   }
   input UpdateAdInput {
-    title: String!
+    title: String
     description: String
-    price: Float!
-    categoryId: ID!
+    price: Float
+    categoryId: ID
   }
 
   extend type Query {
