@@ -1,5 +1,5 @@
 import { Ad } from "../../../models/Ad.js";
-import { AD_ADDED, AD_UPDATED } from "../../events.js";
+import { AD_ADDED, AD_DELETED, AD_UPDATED } from "../../events.js";
 import { pubsub } from "../../pubsub.js";
 
 export const adResolvers = {
@@ -58,7 +58,7 @@ export const adResolvers = {
 
       const ad = await Ad.findByIdAndDelete(id);
 
-      // pubsub.publish(AD_UPDATED, { adUpdated: ad });
+      pubsub.publish(AD_DELETED, { adDeleted: ad });
 
       return ad;
     },

@@ -9,5 +9,8 @@ export const adSubscription = {
     adUpdated: {
       subscribe: () => pubsub.asyncIterableIterator([AD_UPDATED]),
     },
+    adDeleted: {
+      subscribe: () => pubsub.asyncIterableIterator([AD_UPDATED]),
+    },
   },
 };
