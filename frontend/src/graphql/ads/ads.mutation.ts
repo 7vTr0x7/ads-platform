@@ -4,9 +4,7 @@ import { ADS_FRAGMENT } from "./ads.fragment";
 export const CREATE_AD = gql`
   mutation CreateAd($input: CreateAdInput!) {
     createAd(input: $input) {
-      {
-        ...adFields
-      }
+      ...AdFragment
     }
   }
 
@@ -16,9 +14,7 @@ export const CREATE_AD = gql`
 export const UPDATE_AD = gql`
   mutation UpdateAd($input: UpdateAdInput!) {
     updateAd(input: $input) {
-      {
-        ...adFields
-      }
+      ...AdFragment
     }
   }
   ${ADS_FRAGMENT}
