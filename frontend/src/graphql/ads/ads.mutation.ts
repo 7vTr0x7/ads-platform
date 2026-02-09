@@ -19,3 +19,23 @@ export const CREATE_AD = gql`
     }
   }
 `;
+
+export const UPDATE_AD = gql`
+  mutation UpdateAd($input: UpdateAdInput!) {
+    updateAd(input: $input) {
+      id
+      title
+      description
+      price
+      owner {
+        id
+        email
+        role
+      }
+      category {
+        id
+        name
+      }
+    }
+  }
+`;
